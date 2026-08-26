@@ -91,7 +91,6 @@ export const LibrosPage: React.FC = () => {
                 <table style={styles.tabla}>
                   <thead>
                     <tr style={styles.filaHeader}>
-                      <th style={styles.th}>Código ID</th>
                       <th style={styles.th}>Título del Libro</th>
                       <th style={styles.th}>Autor</th>
                       <th style={styles.th}>ISBN / Registro</th>
@@ -109,8 +108,7 @@ export const LibrosPage: React.FC = () => {
                         }}
                         onMouseEnter={() => setHoveredRow(index)}
                         onMouseLeave={() => setHoveredRow(null)}
-                      >
-                        <td style={styles.tdId}>{libro.id}</td>
+                      > 
                         <td style={styles.tdNombre}>{libro.titulo}</td>
                         <td style={styles.td}>{libro.autor}</td>
                         <td style={{...styles.td, fontFamily: 'monospace', fontWeight: '600'}}>{libro.isbn}</td>
