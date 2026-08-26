@@ -1,8 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { WelcomePage } from './pages/WelcomePage';
-import { Sidebar } from './components/SideBar';
+import { Sidebar } from './components/Sidebar';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { LibrosPage } from './pages/LibrosPage';
+import { PrestamosPage } from './pages/PrestamosPage';
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                 {/* 2. Rutas anidadas */}
                 <Route path="usuarios" element={<UsuariosPage />} />
                 <Route path="libros" element={<LibrosPage />} /> {}
+                <Route path="prestamos" element={<PrestamosPage />} />
           
                 
                 {/* Redirección automática si entran a /dashboard a secas */}

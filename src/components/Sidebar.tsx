@@ -4,7 +4,8 @@ import { NavLink } from 'react-router-dom';
 export const Sidebar: React.FC = () => {
   const opciones = [
     { id: 'usuarios', nombre: '👥 Gestión Usuarios', ruta: '/dashboard/usuarios' },
-    { id: 'libros', nombre: '📚 Gestión Libros', ruta: '/dashboard/libros' }
+    { id: 'libros', nombre: '📚 Gestión Libros', ruta: '/dashboard/libros' },
+    { id: 'prestamos', nombre: '📝 Gestión Préstamos', ruta: '/dashboard/prestamos' }
   ];
 
   return (

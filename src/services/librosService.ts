@@ -17,6 +17,18 @@ export interface Ejemplar {
   tituloLibro: string;  
 }
 
+type EjemplarApi = Partial<Ejemplar> & {
+  id?: number | string;
+  idEjemplar?: number | string;
+};
+
+const normalizarEjemplar = (ejemplar: EjemplarApi): Ejemplar | null => {
+  const idEjemplares = Number(ejemplar.idEjemplares ?? ejemplar.idEjemplar ?? ejemplar.id);
+  return Number.isFinite(idEjemplares)
+    ? { ...ejemplar, idEjemplares } as Ejemplar
+    : null;
+};
+
 export const librosService = {
   listar: async (): Promise<Libro[]> => {
     const respuesta = await fetch(`${BASE_URL}/libros`);
@@ -72,7 +84,10 @@ export const librosService = {
       throw new Error('Error al obtener los ejemplares disponibles desde el servidor');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return Array.isArray(data)
+      ? data.map((ejemplar: EjemplarApi) => normalizarEjemplar(ejemplar)).filter((ejemplar): ejemplar is Ejemplar => ejemplar !== null)
+      : [];
   },
 
 

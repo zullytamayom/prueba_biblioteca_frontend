@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { usuariosService } from "../services/usuariosService";
+import { prestamosService } from "../services/prestamosServices";
 import type { Usuario } from "../services/usuariosService";
 import { UsuarioModal } from "../components/UsuarioModal";
 import SearchFilter from '../components/SearchFilter';
@@ -12,6 +13,7 @@ export const UsuariosPage: React.FC = () => {
 
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [prestamosActivos, setPrestamosActivos] = useState<number | null>(null);
 
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [hoveredBtnNuevo, setHoveredBtnNuevo] = useState<boolean>(false);
@@ -39,6 +41,10 @@ export const UsuariosPage: React.FC = () => {
     };
 
     inicializarPanel();
+  }, []);
+
+  useEffect(() => {
+    prestamosService.contarActivos().then(setPrestamosActivos).catch(console.error);
   }, []);
   // page reset handled in handlers (avoid setState inside effects)
   const handleGuardarUsuario = async (usuarioData: Usuario) => {
@@ -108,7 +114,7 @@ export const UsuariosPage: React.FC = () => {
             <div style={styles.kpiCardCristal}>
               <div>
                 <p style={styles.kpiTitulo}>Préstamos Activos</p>
-                <h3 style={styles.kpiNumero}>--</h3>
+                <h3 style={styles.kpiNumero}>{prestamosActivos ?? '--'}</h3>
               </div>
               <span style={styles.kpiIcono}>⏳</span>
             </div>

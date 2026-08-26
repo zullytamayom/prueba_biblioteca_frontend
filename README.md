@@ -1,75 +1,38 @@
-# React + TypeScript + Vite
+# BiblioGest Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React + TypeScript para gestionar usuarios, libros y préstamos mediante la API de biblioteca.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 22+ y npm, para ejecución local.
+- Docker, para construir y ejecutar el despliegue.
+- Backend disponible y accesible desde el navegador o el contenedor.
 
-## React Compiler
+## Ejecución local
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. `cp .env.example .env`
+2. Configura `VITE_API_BASE_URL` con la URL base del backend.
+3. `npm ci`
+4. `npm run dev`
+5. Abre `http://localhost:5173`.
 
-## Expanding the ESLint configuration
+## Validación
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. `npm run build`
+2. `npm run lint`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Despliegue con Docker
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+La URL del backend se incorpora durante el build de Vite mediante `VITE_API_BASE_URL`.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. `docker build --build-arg VITE_API_BASE_URL=http://localhost:8080/api -t bibliogest-frontend .`
+2. `docker run --rm -p 8081:80 bibliogest-frontend`
+3. Abre `http://localhost:8081`.
 
-```
+Si el backend está en otro host, reemplaza la URL del argumento por una dirección accesible desde el navegador del evaluador.
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Funcionalidades
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+- Usuarios: listar, crear, editar y eliminar.
+- Libros: listar, crear, editar y eliminar.
+- Préstamos: registrar, consultar por usuario y por libro, y consultar ejemplares disponibles por ISBN.

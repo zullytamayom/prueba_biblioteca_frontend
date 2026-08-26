@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { librosService } from '../services/librosService';
+import { prestamosService } from '../services/prestamosServices';
 import type { Libro } from '../services/librosService';
 import { LibroModal } from '../components/LibroModal';
 import { FilaLibro } from '../components/FilaLibro'; // Importamos tu nuevo componente de fila expandible
@@ -16,11 +17,16 @@ export const LibrosPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   
   const [totalEjemplares, setTotalEjemplares] = useState<number>(0);
+  const [prestamosActivos, setPrestamosActivos] = useState<number | null>(null);
 
   // Search & pagination
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
+
+  useEffect(() => {
+    prestamosService.contarActivos().then(setPrestamosActivos).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const cargarLibros = async () => {
@@ -103,7 +109,7 @@ export const LibrosPage: React.FC = () => {
             <div style={styles.kpiCardCristal}>
               <div>
                 <p style={styles.kpiTitulo}>Préstamos Activos</p>
-                <h3 style={styles.kpiNumero}>--</h3>
+                <h3 style={styles.kpiNumero}>{prestamosActivos ?? '--'}</h3>
               </div>
               <span style={styles.kpiIcono}>⏳</span>
             </div>
