@@ -4,8 +4,7 @@ import { NavLink } from 'react-router-dom';
 export const Sidebar: React.FC = () => {
   const opciones = [
     { id: 'usuarios', nombre: '👥 Gestión Usuarios', ruta: '/dashboard/usuarios' },
-    { id: 'libros', nombre: '📚 Gestión Libros', ruta: '/dashboard/libros' },
-    { id: 'prestamos', nombre: '📄 Gestión Préstamos', ruta: '/dashboard/prestamos' }
+    { id: 'libros', nombre: '📚 Gestión Libros', ruta: '/dashboard/libros' }
   ];
 
   return (
@@ -27,7 +26,7 @@ export const Sidebar: React.FC = () => {
               backgroundColor: isActive ? '#854d0e' : 'transparent',
               color: isActive ? '#ffffff' : '#cbd5e1',
               boxShadow: isActive ? '0 4px 6px -1px rgba(0, 0, 0, 0.2)' : 'none',
-              textDecoration: 'none', // Evita que aparezca la línea azul de link clásico
+              textDecoration: 'none',
               display: 'block'
             })}
           >

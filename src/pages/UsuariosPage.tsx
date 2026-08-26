@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { usuariosService } from "../services/usuariosService";
 import type { Usuario } from "../services/usuariosService";
 import { UsuarioModal } from "../components/UsuarioModal";
+import SearchFilter from '../components/SearchFilter';
+import PaginationControls from '../components/PaginationControls';
 
 export const UsuariosPage: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -13,6 +15,11 @@ export const UsuariosPage: React.FC = () => {
 
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [hoveredBtnNuevo, setHoveredBtnNuevo] = useState<boolean>(false);
+
+  // Search & Pagination
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     const inicializarPanel = async () => {
@@ -33,6 +40,7 @@ export const UsuariosPage: React.FC = () => {
 
     inicializarPanel();
   }, []);
+  // page reset handled in handlers (avoid setState inside effects)
   const handleGuardarUsuario = async (usuarioData: Usuario) => {
     if (usuarioData.idUsuario) {
       const usuarioEditado = await usuariosService.actualizar(usuarioData.idUsuario, usuarioData);
@@ -114,7 +122,9 @@ export const UsuariosPage: React.FC = () => {
                   Listado oficial de miembros con acceso a préstamos de ejemplares.
                 </p>
               </div>
-              <button
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <SearchFilter value={searchTerm} onChange={(v) => { setSearchTerm(v); setPage(1); }} placeholder="Buscar por cualquier campo" />
+                  <button
                 onClick={handleAbrirCrear}
                 style={{
                   ...styles.botonNuevo,
@@ -126,6 +136,7 @@ export const UsuariosPage: React.FC = () => {
               >
                 + Registrar Lector
               </button>
+                </div>
             </div>
 
             {usuarios.length === 0 ? (
@@ -145,7 +156,12 @@ export const UsuariosPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {usuarios.map((usuario, index) => (
+                    {(() => {
+                      const filtered = usuarios.filter((u) => JSON.stringify(u).toLowerCase().includes(searchTerm.toLowerCase()));
+                      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+                      const current = Math.min(page, totalPages);
+                      const paginated = filtered.slice((current - 1) * pageSize, current * pageSize);
+                      return paginated.map((usuario, index) => (
                       <tr
                         key={usuario.idUsuario}
                         style={{
@@ -166,9 +182,11 @@ export const UsuariosPage: React.FC = () => {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      ));
+                    })()}
                   </tbody>
                 </table>
+                <PaginationControls currentPage={page} totalPages={Math.max(1, Math.ceil(usuarios.filter((u) => JSON.stringify(u).toLowerCase().includes(searchTerm.toLowerCase())).length / pageSize))} onPageChange={setPage} pageSize={pageSize} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
               </div>
             )}
           </div>

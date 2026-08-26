@@ -1,16 +1,17 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { WelcomePage } from './pages/WelcomePage';
-import { Sidebar } from './components/SideBar'; // Asegúrate de que las mayúsculas del nombre coincidan con tu archivo
+import { Sidebar } from './components/SideBar';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { LibrosPage } from './pages/LibrosPage';
+
 
 function App() {
   return (
     <Routes>
-      {/* 1. Ruta Inicial Espectacular (Limpia y sin propiedades viejas) */}
+      {}
       <Route path="/" element={<WelcomePage />} />
 
-      {/* 2. Rutas del Dashboard anidadas correctamente con el Layout Común */}
+      {}
       <Route
         path="/dashboard/*"
         element={
@@ -18,10 +19,10 @@ function App() {
             <Sidebar />
             <main style={styles.contenidoPrincipal}>
               <Routes>
-                {/* Sub-rutas internas que heredarán el Menú Lateral automáticamente */}
+                {/* 2. Rutas anidadas */}
                 <Route path="usuarios" element={<UsuariosPage />} />
-                <Route path="libros" element={<LibrosPage />} /> {/* Cargamos tu componente real de libros */}
-                <Route path="prestamos" element={<div style={styles.vistaProvisional}><h2>📄 Gestión de Préstamos</h2><p>Próximamente...</p></div>} />
+                <Route path="libros" element={<LibrosPage />} /> {}
+          
                 
                 {/* Redirección automática si entran a /dashboard a secas */}
                 <Route path="*" element={<Navigate to="usuarios" replace />} />
