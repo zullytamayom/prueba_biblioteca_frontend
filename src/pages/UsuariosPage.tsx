@@ -8,12 +8,14 @@ export const UsuariosPage: React.FC = () => {
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [hoveredBtnNuevo, setHoveredBtnNuevo] = useState<boolean>(false);
 
   useEffect(() => {
-    const cargarUsuarios = async () => {
+    const inicializarPanel = async () => {
       try {
         setCargando(true);
         const data = await usuariosService.listar();
@@ -29,13 +31,46 @@ export const UsuariosPage: React.FC = () => {
       }
     };
 
-    cargarUsuarios();
+    inicializarPanel();
   }, []);
+  const handleGuardarUsuario = async (usuarioData: Usuario) => {
+    if (usuarioData.idUsuario) {
+      const usuarioEditado = await usuariosService.actualizar(usuarioData.idUsuario, usuarioData);
+      setUsuarios(usuarios.map((u) => (u.idUsuario === usuarioData.idUsuario ? usuarioEditado : u)));
+    } else {
+      // Modo creación: POST
+      const usuarioCreado = await usuariosService.crear(usuarioData);
+      setUsuarios([...usuarios, usuarioCreado]);
+    }
+  };
 
-  const handleGuardarUsuario = async (nuevoUsuario: Usuario) => {
-    const usuarioCreado = await usuariosService.crear(nuevoUsuario);
+  const handleAbrirCrear = () => {
+    setUsuarioSeleccionado(null);
+    setIsModalOpen(true);
+  };
 
-    setUsuarios([...usuarios, usuarioCreado]);
+  const handleAbrirEditar = (usuario: Usuario) => {
+    setUsuarioSeleccionado(usuario);
+    setIsModalOpen(true);
+  };
+
+  const handleEliminarUsuario = async (idUsuario: number, nombre: string) => {
+    if (
+      window.confirm(
+        `¿Estás seguro de que deseas dar de baja al lector ${nombre} del sistema?`,
+      )
+    ) {
+      try {
+        await usuariosService.eliminar(idUsuario);
+        setUsuarios(usuarios.filter((u) => u.idUsuario !== idUsuario));
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          alert(err.message);
+        } else {
+          alert("No se pudo dar de baja al lector.");
+        }
+      }
+    }
   };
 
   if (cargando)
@@ -47,7 +82,6 @@ export const UsuariosPage: React.FC = () => {
     <div style={styles.contenedorConFondo}>
       <div style={styles.overlayOscuro}>
         <div style={styles.contenidoInterno}>
-          {/* Fila de Indicadores con sombras y bordes suavizados */}
           <div style={styles.kpiGrid}>
             <div style={styles.kpiCardCristal}>
               <div>
@@ -72,18 +106,16 @@ export const UsuariosPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Tarjeta de la Tabla Principal */}
           <div style={styles.cardTablaCristal}>
             <div style={styles.encabezado}>
               <div>
                 <h2 style={styles.tituloSeccion}>Lectores Registrados</h2>
                 <p style={styles.subtituloSeccion}>
-                  Listado oficial de miembros con acceso a préstamos de
-                  ejemplares.
+                  Listado oficial de miembros con acceso a préstamos de ejemplares.
                 </p>
               </div>
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={handleAbrirCrear}
                 style={{
                   ...styles.botonNuevo,
                   backgroundColor: hoveredBtnNuevo ? "#a15c11" : "#854d0e",
@@ -115,11 +147,10 @@ export const UsuariosPage: React.FC = () => {
                   <tbody>
                     {usuarios.map((usuario, index) => (
                       <tr
-                        key={usuario.id}
+                        key={usuario.idUsuario}
                         style={{
                           ...styles.filaBody,
-                          backgroundColor:
-                            hoveredRow === index ? "#f8fafc" : "transparent",
+                          backgroundColor: hoveredRow === index ? "#f8fafc" : "transparent",
                         }}
                         onMouseEnter={() => setHoveredRow(index)}
                         onMouseLeave={() => setHoveredRow(null)}
@@ -129,8 +160,8 @@ export const UsuariosPage: React.FC = () => {
                         <td style={styles.td}>{usuario.email}</td>
                         <td style={styles.td}>{usuario.fechaNacimiento}</td>
                         <td style={styles.td}>
-                          <button style={styles.botonEditar}>⚙️ Editar</button>
-                          <button style={styles.botonEliminar}>
+                          <button onClick={() => handleAbrirEditar(usuario)} style={styles.botonEditar}>⚙️ Editar</button>
+                          <button onClick={() => handleEliminarUsuario(usuario.idUsuario!, usuario.nombre)} style={styles.botonEliminar}>
                             🗑️ Dar de baja
                           </button>
                         </td>
@@ -143,16 +174,19 @@ export const UsuariosPage: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* Componente del Formulario Emergente */}
+
       <UsuarioModal
+        key={usuarioSeleccionado ? `editar-${usuarioSeleccionado.idUsuario}` : "nuevo"}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onGuardar={handleGuardarUsuario}
+        usuarioAEditar={usuarioSeleccionado}
       />
     </div>
   );
 };
 
+// RESTAURADO: Bloque completo de estilos CSS cerrados correctamente
 const styles = {
   contenedorConFondo: {
     backgroundImage: `url('https://unsplash.com')`,
@@ -186,132 +220,22 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    boxShadow:
-      "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
     border: "1px solid rgba(255, 255, 255, 0.4)",
   },
-  kpiTitulo: {
-    margin: 0,
-    fontSize: "13px",
-    color: "#475569",
-    fontWeight: "600",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.5px",
-  },
-  kpiNumero: {
-    margin: "6px 0 0 0",
-    fontSize: "34px",
-    color: "#0f172a",
-    fontWeight: "800",
-  },
-  kpiIcono: {
-    fontSize: "24px",
-    backgroundColor: "rgba(133, 77, 14, 0.1)",
-    padding: "12px",
-    borderRadius: "14px",
-    color: "#854d0e",
-  },
-  cardTablaCristal: {
-    backgroundColor: "#ffffff",
-    borderRadius: "16px",
-    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15)",
-    border: "1px solid #e2e8f0",
-    overflow: "hidden",
-  },
-  encabezado: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "28px 32px",
-    borderBottom: "1px solid #f1f5f9",
-  },
-  tituloSeccion: {
-    fontSize: "22px",
-    fontWeight: "800",
-    color: "#0f172a",
-    margin: 0,
-    letterSpacing: "-0.5px",
-  },
+  kpiTitulo: { margin: 0, fontSize: "13px", color: "#475569", fontWeight: "600", textTransform: "uppercase" as const, letterSpacing: "0.5px" },
+  kpiNumero: { margin: "6px 0 0 0", fontSize: "34px", color: "#0f172a", fontWeight: "800" },
+  kpiIcono: { fontSize: "24px", backgroundColor: "rgba(133, 77, 14, 0.1)", padding: "12px", borderRadius: "14px", color: "#854d0e" },
+  cardTablaCristal: { backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15)", border: "1px solid #e2e8f0", overflow: "hidden" },
+  encabezado: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "28px 32px", borderBottom: "1px solid #f1f5f9" },
+  tituloSeccion: { fontSize: "22px", fontWeight: "800", color: "#0f172a", margin: 0, letterSpacing: "-0.5px" },
   subtituloSeccion: { fontSize: "14px", color: "#64748b", margin: "6px 0 0 0" },
-  botonNuevo: {
-    color: "#fff",
-    border: "none",
-    padding: "12px 24px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-    boxShadow: "0 4px 14px rgba(133, 77, 14, 0.35)",
-    transition: "all 0.2s ease-in-out",
-  },
+  botonNuevo: { color: "#fff", border: "none", padding: "12px 24px", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "14px", boxShadow: "0 4px 14px rgba(133, 77, 14, 0.35)", transition: "all 0.2s ease-in-out" },
   tableWrapper: { overflowX: "auto" as const },
-  tabla: {
-    width: "100%",
-    borderCollapse: "collapse" as const,
-    fontSize: "14px",
-  },
-  filaHeader: {
-    backgroundColor: "#f8fafc",
-    borderBottom: "1px solid #edf2f7",
-    textAlign: "left" as const,
-  },
-  th: {
-    padding: "18px 24px",
-    color: "#475569",
-    fontWeight: "700",
-    textTransform: "uppercase" as const,
-    fontSize: "12px",
-    letterSpacing: "0.5px",
-  },
-  filaBody: {
-    borderBottom: "1px solid #f1f5f9",
-    transition: "background-color 0.15s ease",
-  },
+  tabla: { width: "100%", borderCollapse: 'collapse' as const, fontSize: "14px" },
+  filaHeader: { backgroundColor: "#f8fafc", borderBottom: "1px solid #edf2f7", textAlign: "left" as const },
+  th: { padding: "18px 24px", color: "#475569", fontWeight: "700", textTransform: "uppercase" as const, fontSize: "12px", letterSpacing: "0.5px" },
+  filaBody: { borderBottom: "1px solid #f1f5f9", transition: "background-color 0.15s ease" },
   td: { padding: "18px 24px", color: "#334155" },
-  tdId: { padding: "18px 24px", fontWeight: "bold" as const, color: "#94a3b8" },
-  tdNombre: {
-    padding: "18px 24px",
-    fontWeight: "600" as const,
-    color: "#1e293b",
-  },
-  botonEditar: {
-    backgroundColor: "#fef3c7",
-    color: "#d97706",
-    border: "none",
-    padding: "6px 14px",
-    marginRight: "8px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "13px",
-    transition: "background-color 0.2s",
-  },
-  botonEliminar: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    border: "none",
-    padding: "6px 14px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "13px",
-    transition: "background-color 0.2s",
-  },
-  vacioText: {
-    padding: "40px",
-    textAlign: "center" as const,
-    color: "#64748b",
-    fontSize: "15px",
-  },
-  centro: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#ffffff",
-    backgroundColor: "#0f172a",
-    fontFamily: "system-ui",
-  },
-};
+  tdNombre: { padding: "18px 24px", fontWeight: "600" as const, color: "#1e293b" },
+  botonEditar: { backgroundColor: '#fef3c7', color: '#d97706', border: "none", padding: "6px 14px", marginRight: "8px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "13px" },botonEliminar: { backgroundColor: "#fee2e2", color: "#dc2626", border: "none", padding: "6px 14px", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "13px" },vacioText: { padding: "40px", textAlign: "center" as const, color: "#64748b", fontSize: "15px" },centro: { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", fontSize: "16px", fontWeight: "600", color: "#ffffff", backgroundColor: "#0f172a", fontFamily: "system-ui" }};

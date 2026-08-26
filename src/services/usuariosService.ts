@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export interface Usuario {
-  id?: number;
+  idUsuario?: number;
   nombre: string;
   apellido: string;
   email: string;
@@ -31,5 +31,33 @@ export const usuariosService = {
     }
 
     return await respuesta.json();
+  },
+  actualizar: async (id: number, usuario: Usuario): Promise<Usuario> => {
+    const respuesta = await fetch(`${BASE_URL}/usuarios/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(usuario)
+    });
+
+    if (!respuesta.ok) {
+      const errorData = await respuesta.json().catch(() => ({}));
+      throw new Error(errorData.message || "Error al actualizar el lector en el servidor.");
+    }
+
+    return await respuesta.json();
+  },
+  eliminar: async (idUsuario: number): Promise<void> => {
+  const res = await fetch(`${BASE_URL}/usuarios/${idUsuario}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error HTTP: ${res.status}`);
   }
+
+  // NO hacer res.json() ni res.text() aquí
+}
+
 };
